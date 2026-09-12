@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-
 	"os"
 	"os/exec"
 )
@@ -16,7 +15,6 @@ func main() {
 	}
 
 	createColiseum()
-	 
 }
 
 // program launcher function
@@ -35,11 +33,12 @@ func createColiseum() {
   
 	for i := 1; i <= 3; i++ {
 		// create command that builds a node, taking node subcommand, node-id, and port as args
-		cmd := exec.Command(coliseum,
-																	"node",
-																	fmt.Sprintf("--node-id=node-%d", i),
-																	fmt.Sprintf("--port=%d", 8000+i),
-		) 
+		cmd := exec.Command(
+			coliseum,
+			"node",
+			fmt.Sprintf("--node-id=node-%d", i),
+			fmt.Sprintf("--port=%d", 8000+i),
+		)
 
 		cmd.Stdout = os.Stdout	
 		cmd.Stderr = os.Stderr	
