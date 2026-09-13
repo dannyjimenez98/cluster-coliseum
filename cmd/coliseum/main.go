@@ -5,25 +5,47 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"flag"
+
+	"github.com/dannyjimenez98/cluster-coliseum/internal/node"
 )
 
 func main() {
 	// if this process was spawned as a node, run node logic and skip the launcher.
 	if len(os.Args) > 1 && os.Args[1] == "node" {
-		fmt.Println("this is a node - do not proceed to run launch cmd")
+		startNode()
 		return
 	}
 
 	createColiseum()
 }
 
+
+func startNode() {
+// 1. parse args from cmd
+// 2. create node
+// 3. start http server
+	nodeFlagSet := flag.NewFlagSet("node", flag.ExitOnError)
+
+	nodeID := nodeFlagSet.String("node-id", "", "Node ID (required)")
+	port :=  nodeFlagSet.Int("port", 0, "Port number for the node server")
+
+	// Skip executable and "node" subcommand, then parse node flags
+	_ = nodeFlagSet.Parse(os.Args[2:])
+
+	if *nodeID == "" || *port == 0 {
+		log.Fatal("ERROR: required node flags are missing or invalid")
+	}
+
+	n := node.NewNode(*nodeID)
+	fmt.Printf("port %v --> node: %#v\n",*port, n)
+}
+
+
 // program launcher function
 // builds the starting nodes in the cluster (coliseum)
 // TODO: 
 // - improve doc comments and explain in more detail what this function process 
-// - implement Flag pkg to parse the args from the cmd
-// - add ability to run the node building cmd from the terminal as an option, rather than the default of having the program do it
-// - tie this together with node logic function that the created node processes will run 
 // - create http server for each node, using the port from the cmd line args
 func createColiseum() {
 	coliseum, err := os.Executable() // return the path to this executable
@@ -36,8 +58,8 @@ func createColiseum() {
 		cmd := exec.Command(
 			coliseum,
 			"node",
-			fmt.Sprintf("--node-id=node-%d", i),
-			fmt.Sprintf("--port=%d", 8000+i),
+			"--node-id", fmt.Sprintf("%d", i),
+			"--port", fmt.Sprintf("%d", 8000+i),
 		)
 
 		cmd.Stdout = os.Stdout	
